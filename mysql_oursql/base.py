@@ -58,6 +58,8 @@ server_version_re = re.compile(r'(\d{1,2})\.(\d{1,2})\.(\d{1,2})')
 # standard util.CursorDebugWrapper can be used. Also, using sql_mode
 # TRADITIONAL will automatically cause most warnings to be treated as errors.
 
+params_re = re.compile(r'%[a-zA-Z]')
+
 class CursorWrapper(object):
     """
     A thin wrapper around oursql's normal cursor class so that we can catch
@@ -70,8 +72,12 @@ class CursorWrapper(object):
 
     def __init__(self, cursor):
         self.cursor = cursor
+        
+    def _replace_params(self, query):
+        return params_re.replace('?', query)
 
     def execute(self, query, args=None):
+        query = self._replace_params(query)
         try:
             return self.cursor.execute(query, args)
         except Database.OperationalError, e:
@@ -82,6 +88,7 @@ class CursorWrapper(object):
             raise
 
     def executemany(self, query, args):
+        query = self._replace_params(query)
         try:
             return self.cursor.executemany(query, args)
         except Database.OperationalError, e:
