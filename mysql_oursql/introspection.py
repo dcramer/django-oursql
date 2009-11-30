@@ -30,7 +30,7 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
 
     def get_table_list(self, cursor):
         "Returns a list of table names in the current database."
-        cursor.execute("SHOW TABLES")
+        cursor.execute("SHOW TABLES", plain_query=True)
         return [row[0] for row in cursor.fetchall()]
 
     def get_table_description(self, cursor, table_name):
@@ -66,7 +66,7 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
         except (ProgrammingError, OperationalError):
             # Fall back to "SHOW CREATE TABLE", for previous MySQL versions.
             # Go through all constraints and save the equal matches.
-            cursor.execute("SHOW CREATE TABLE %s" % self.connection.ops.quote_name(table_name))
+            cursor.execute("SHOW CREATE TABLE %s" % self.connection.ops.quote_name(table_name), plain_query=True)
             for row in cursor.fetchall():
                 pos = 0
                 while True:
@@ -90,7 +90,7 @@ class DatabaseIntrospection(BaseDatabaseIntrospection):
             {'primary_key': boolean representing whether it's the primary key,
              'unique': boolean representing whether it's a unique index}
         """
-        cursor.execute("SHOW INDEX FROM %s" % self.connection.ops.quote_name(table_name))
+        cursor.execute("SHOW INDEX FROM %s" % self.connection.ops.quote_name(table_name), plain_query=True)
         indexes = {}
         for row in cursor.fetchall():
             indexes[row[4]] = {'primary_key': (row[2] == 'PRIMARY'), 'unique': not bool(row[1])}

@@ -63,3 +63,42 @@ class DatabaseCreation(BaseDatabaseCreation):
                 field.rel.to._meta.db_table, field.rel.to._meta.pk.column)
             ]
         return table_output, deferred
+
+    def _create_test_db(self, verbosity, autoclobber):
+        "Internal implementation - creates the test db tables."
+        suffix = self.sql_table_creation_suffix()
+
+        if settings.TEST_DATABASE_NAME:
+            test_database_name = settings.TEST_DATABASE_NAME
+        else:
+            test_database_name = TEST_DATABASE_PREFIX + settings.DATABASE_NAME
+
+        qn = self.connection.ops.quote_name
+
+        # Create the test database and connect to it. We need to autocommit
+        # if the database supports it because PostgreSQL doesn't allow
+        # CREATE/DROP DATABASE statements within transactions.
+        cursor = self.connection.cursor()
+        self.set_autocommit()
+        try:
+            cursor.execute("CREATE DATABASE %s %s" % (qn(test_database_name), suffix), plain_query=True)
+        except Exception, e:
+            sys.stderr.write("Got an error creating the test database: %s\n" % e)
+            if not autoclobber:
+                confirm = raw_input("Type 'yes' if you would like to try deleting the test database '%s', or 'no' to cancel: " % test_database_name)
+            if autoclobber or confirm == 'yes':
+                try:
+                    if verbosity >= 1:
+                        print "Destroying old test database..."
+                    cursor.execute("DROP DATABASE %s" % qn(test_database_name), plain_query=True)
+                    if verbosity >= 1:
+                        print "Creating test database..."
+                    cursor.execute("CREATE DATABASE %s %s" % (qn(test_database_name), suffix), plain_query=True)
+                except Exception, e:
+                    sys.stderr.write("Got an error recreating the test database: %s\n" % e)
+                    sys.exit(2)
+            else:
+                print "Tests cancelled."
+                sys.exit(1)
+
+        return test_database_name

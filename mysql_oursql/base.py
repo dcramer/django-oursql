@@ -61,10 +61,10 @@ class CursorWrapper(object):
     def _replace_params(self, query):
         return params_re.sub('?', query)
 
-    def execute(self, query, args=None):
+    def execute(self, query, args=(), **kwargs):
         query = self._replace_params(query)
         try:
-            return self.cursor.execute(query, args)
+            return self.cursor.execute(query, args, **kwargs)
         except Database.OperationalError, e:
             # Map some error codes to IntegrityError, since they seem to be
             # misclassified and Django would prefer the more logical place.
@@ -72,10 +72,10 @@ class CursorWrapper(object):
                 raise Database.IntegrityError(tuple(e))
             raise
 
-    def executemany(self, query, args):
+    def executemany(self, query, args, **kwargs):
         query = self._replace_params(query)
         try:
-            return self.cursor.executemany(query, args)
+            return self.cursor.executemany(query, args, **kwargs)
         except Database.OperationalError, e:
             # Map some error codes to IntegrityError, since they seem to be
             # misclassified and Django would prefer the more logical place.
