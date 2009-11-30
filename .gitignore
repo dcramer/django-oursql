@@ -1,0 +1,4 @@
+/django_oursql.egg-info
+/build
+/dist
+*.pyc
