@@ -14,10 +14,10 @@ except ImportError, e:
 
 from django.db.backends import *
 from django.db.backends.signals import connection_created
-from django.db.backends.mysql.client import DatabaseClient
-from django.db.backends.mysql.creation import DatabaseCreation
-from django.db.backends.mysql.introspection import DatabaseIntrospection
-from django.db.backends.mysql.validation import DatabaseValidation
+from mysql_oursql.client import DatabaseClient
+from mysql_oursql.creation import DatabaseCreation
+from mysql_oursql.introspection import DatabaseIntrospection
+from mysql_oursql.validation import DatabaseValidation
 # from django.utils.safestring import SafeString, SafeUnicode
 
 # Raise exceptions for database warnings if DEBUG is on
