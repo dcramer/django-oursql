@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.db.backends.creation import BaseDatabaseCreation
+from django.db.backends.creation import BaseDatabaseCreation, TEST_DATABASE_PREFIX
 
 class DatabaseCreation(BaseDatabaseCreation):
     # This dictionary maps Field objects to their associated MySQL column
@@ -68,10 +68,10 @@ class DatabaseCreation(BaseDatabaseCreation):
         "Internal implementation - creates the test db tables."
         suffix = self.sql_table_creation_suffix()
 
-        if settings.TEST_DATABASE_NAME:
-            test_database_name = settings.TEST_DATABASE_NAME
+        if self.connection.settings_dict['TEST_NAME']:
+            test_database_name = self.connection.settings_dict['TEST_NAME']
         else:
-            test_database_name = TEST_DATABASE_PREFIX + settings.DATABASE_NAME
+            test_database_name = TEST_DATABASE_PREFIX + self.connection.settings_dict['NAME']
 
         qn = self.connection.ops.quote_name
 
