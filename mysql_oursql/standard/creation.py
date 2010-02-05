@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.db.backends.creation import BaseDatabaseCreation, TEST_DATABASE_PREFIX
+import sys
 
 class DatabaseCreation(BaseDatabaseCreation):
     # This dictionary maps Field objects to their associated MySQL column
