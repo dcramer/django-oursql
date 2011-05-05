@@ -4,6 +4,7 @@ MySQL database backend for Django.
 Requires oursql: https://launchpad.net/oursql
 """
 
+import sys
 import re
 
 try:
@@ -12,6 +13,7 @@ except ImportError, e:
     from django.core.exceptions import ImproperlyConfigured
     raise ImproperlyConfigured("Error loading oursql module: %s" % e)
 
+from django.db import utils
 from django.db.backends import *
 from django.db.backends.signals import connection_created
 from mysql_oursql.standard.client import DatabaseClient
@@ -64,25 +66,28 @@ class CursorWrapper(object):
 
     def execute(self, query, args=(), **kwargs):
         query = self._replace_params(query)
-        print args
         try:
             return self.cursor.execute(query, args, **kwargs)
+        except Database.IntegrityError, e:
+            raise utils.IntegrityError, utils.IntegrityError(*tuple(e)), sys.exc_info()[2]
         except Database.OperationalError, e:
             # Map some error codes to IntegrityError, since they seem to be
             # misclassified and Django would prefer the more logical place.
             if e[0] in self.codes_for_integrityerror:
-                raise Database.IntegrityError(tuple(e))
+                raise utils.IntegrityError, utils.IntegrityError(*tuple(e)), sys.exc_info()[2]
             raise
 
     def executemany(self, query, args, **kwargs):
         query = self._replace_params(query)
         try:
             return self.cursor.executemany(query, args, **kwargs)
+        except Database.IntegrityError, e:
+            raise utils.IntegrityError, utils.IntegrityError(*tuple(e)), sys.exc_info()[2]
         except Database.OperationalError, e:
             # Map some error codes to IntegrityError, since they seem to be
             # misclassified and Django would prefer the more logical place.
             if e[0] in self.codes_for_integrityerror:
-                raise Database.IntegrityError(tuple(e))
+                raise utils.IntegrityError, utils.IntegrityError(*tuple(e)), sys.exc_info()[2]
             raise
 
     def __getattr__(self, attr):
