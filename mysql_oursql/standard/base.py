@@ -163,6 +163,9 @@ class DatabaseWrapper(BaseDatabaseWrapper):
                 kwargs['host'] = settings_dict['HOST']
             if settings_dict['PORT']:
                 kwargs['port'] = int(settings_dict['PORT'])
+            opts = settings_dict['OPTIONS']
+            if 'autoreconnect' in opts:
+                kwargs['autoreconnect'] = opts['autoreconnect']
             # We need the number of potentially affected rows after an
             # "UPDATE", not the number of changed rows.
             kwargs['found_rows'] = True
